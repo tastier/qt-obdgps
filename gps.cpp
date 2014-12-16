@@ -3,7 +3,7 @@
 pthread_t pgps_t;
 int fd_gps;//File descriptor
 struct GPS gps_info;//Global GPS information
-const char *dev_path = "/dev/ttyACM0";//GPS device file path
+const char *dev_path = "/dev/ttyUSB0";//GPS device file path
 
 int set_opt(int fd, int nSpeed, int nBits, char nEvent, int nStop)
 {
@@ -97,7 +97,7 @@ struct GPS reading_gps()
 
    memset(buff_gps,0,sizeof(buff_gps));
    read(fd_gps,buff_gps,BUF_SIZE);
-   if((gprmc = strstr(buff_gps,"$GPRMC")) != NULL)
+   if((gprmc = strstr(buff_gps,"$GNRMC")) != NULL)
    {
        int nthComma = 0;
        char *p;
@@ -171,7 +171,8 @@ void * thread_reading(void *ctmp)
 
         //usleep(p->interval);
         //printf("Thread running\n");
-        usleep(GPS_INTERVAL);
+//        usleep(GPS_INTERVAL);
+        sleep(1);
 //		usleep(400000);
     }
     return ((void *)0);

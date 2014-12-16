@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 //    }
 
 //    //gps thread
-//    cthread_gps();
+    cthread_gps();
 
     // data_contrl thread
     if((pthread_create(&contrl, NULL, data_contrl, NULL)) == -1)
