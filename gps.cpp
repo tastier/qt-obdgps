@@ -94,50 +94,66 @@ struct GPS reading_gps()
    char buff_gps[BUF_SIZE];
    int Gtime;
    int Gtime_hh;
+   int nread = 0, tmplen = 0;
 
    memset(buff_gps,0,sizeof(buff_gps));
-   read(fd_gps,buff_gps,BUF_SIZE);
+
+   while(1){
+       nread = read(fd_gps, buff_gps + tmplen, BUF_SIZE);
+       if (nread > 0) {
+           tmplen += nread;
+       }
+       if (tmplen > 500) {
+           break;
+       }
+//	   else{
+//		   usleep(500000);//0.5s
+//	   }
+   }
+
+   //make sure that we have read the whole £¤GNRMC data
    if((gprmc = strstr(buff_gps,"$GNRMC")) != NULL)
    {
-       int nthComma = 0;
-       char *p;
-       for(p=gprmc;(*p!='*');p++)
-       {
-           if ((*p!=','))
-                continue;
-           nthComma++;
-           commaPos[nthComma] = p;
-       }
+       if (strstr(gprmc, "*") != NULL) {
+           int nthComma = 0;
+           char *p;
+           for(p=gprmc;(*p!='*');p++)
+           {
+               if ((*p!=','))
+                    continue;
+               nthComma++;
+               commaPos[nthComma] = p;
+           }
 
-       Gtime = (int)atof(commaPos[1]+1);
-	   if ((floor(Gtime / 10000) + 8) > 24) {
-		   Gtime_hh = (int) (floor(Gtime / 10000) + 8 - 24);
-	   }else{
-		   Gtime_hh = (int) (floor(Gtime / 10000) + 8);
-	   }
+           Gtime = (int)atof(commaPos[1]+1);
+           if ((floor(Gtime / 10000) + 8) > 24) {
+               Gtime_hh = (int) (floor(Gtime / 10000) + 8 - 24);
+           }else{
+               Gtime_hh = (int) (floor(Gtime / 10000) + 8);
+           }
 
-	   gps_info.time_hh    = Gtime_hh;
-	   gps_info.time_min   = (int) (floor(Gtime % 10000) / 100);
-	   gps_info.time_sec   = (int) floor(Gtime % 100);
-       gps_info.status     = *(commaPos[2]+1);
-       gps_info.latitude   = atof(commaPos[3]+1)/100;
-       gps_info.lat_N_S    = *(commaPos[4]+1);
-       gps_info.longitude  = atof(commaPos[5]+1)/100;
-       gps_info.lng_E_W    = *(commaPos[6]+1);
-       gps_info.speed      = atof(commaPos[7]+1)*1.852;
-       gps_info.direction  = atof(commaPos[8]+1);
-       gps_info.date       = atoi(commaPos[9]+1);
+           gps_info.time_hh    = Gtime_hh;
+           gps_info.time_min   = (int) (floor(Gtime % 10000) / 100);
+           gps_info.time_sec   = (int) floor(Gtime % 100);
+           gps_info.status     = *(commaPos[2]+1);
+           gps_info.latitude   = atof(commaPos[3]+1)/100;
+           gps_info.lat_N_S    = *(commaPos[4]+1);
+           gps_info.longitude  = atof(commaPos[5]+1)/100;
+           gps_info.lng_E_W    = *(commaPos[6]+1);
+           gps_info.speed      = atof(commaPos[7]+1)*1.852;
+           gps_info.direction  = atof(commaPos[8]+1);
+           gps_info.date       = atoi(commaPos[9]+1);
 
-       if((gps_info.latitude-floor(gps_info.latitude))*100<60.0)
-           gps_info.latitude = floor(gps_info.latitude) + ((gps_info.latitude-floor(gps_info.latitude)) * 100)/60.0;
-       else
-           gps_info.latitude = floor(gps_info.latitude) + ((gps_info.latitude-floor(gps_info.latitude)) * 10)/60.0;
+           if((gps_info.latitude-floor(gps_info.latitude))*100<60.0)
+               gps_info.latitude = floor(gps_info.latitude) + ((gps_info.latitude-floor(gps_info.latitude)) * 100)/60.0;
+           else
+               gps_info.latitude = floor(gps_info.latitude) + ((gps_info.latitude-floor(gps_info.latitude)) * 10)/60.0;
 
-       if((gps_info.longitude-floor(gps_info.longitude))*100<60.0)
-           gps_info.longitude = floor(gps_info.longitude) + ((gps_info.longitude-floor(gps_info.longitude)) * 100)/60.0;
-       else
-           gps_info.longitude = floor(gps_info.longitude) + ((gps_info.longitude-floor(gps_info.longitude)) * 10)/60.0;
-
+           if((gps_info.longitude-floor(gps_info.longitude))*100<60.0)
+               gps_info.longitude = floor(gps_info.longitude) + ((gps_info.longitude-floor(gps_info.longitude)) * 100)/60.0;
+           else
+               gps_info.longitude = floor(gps_info.longitude) + ((gps_info.longitude-floor(gps_info.longitude)) * 10)/60.0;
+     }
    }
    return gps_info;
 }
@@ -167,12 +183,8 @@ void * thread_reading(void *ctmp)
     {
         reading_gps();
 
-//		test();
-
-        //usleep(p->interval);
-        //printf("Thread running\n");
 //        usleep(GPS_INTERVAL);
-        sleep(1);
+//        sleep(1);
 //		usleep(400000);
     }
     return ((void *)0);
