@@ -99,6 +99,7 @@ struct GPS reading_gps()
    memset(buff_gps,0,sizeof(buff_gps));
 
    while(1){
+       sleep(1);
        nread = read(fd_gps, buff_gps + tmplen, BUF_SIZE);
        if (nread > 0) {
            tmplen += nread;
@@ -106,12 +107,9 @@ struct GPS reading_gps()
        if (tmplen > 500) {
            break;
        }
-//	   else{
-//		   usleep(500000);//0.5s
-//	   }
    }
 
-   //make sure that we have read the whole £¤GNRMC data
+   //make sure that we have read the whole $GNRMC data
    if((gprmc = strstr(buff_gps,"$GNRMC")) != NULL)
    {
        if (strstr(gprmc, "*") != NULL) {
