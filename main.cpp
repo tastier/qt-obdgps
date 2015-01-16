@@ -11,12 +11,12 @@ int main(int argc, char *argv[])
 {
     pthread_t obd, contrl;
 
-//    // obd thread
-//    if((pthread_create(&obd, NULL, obd_thread, NULL)) == -1)
-//    {
-//        perror("Create OBD thread error !\n");
-//        exit(-1);
-//    }
+    // obd thread
+    if((pthread_create(&obd, NULL, obd_thread, NULL)) == -1)
+    {
+        perror("Create OBD thread error !\n");
+        exit(-1);
+    }
 
 //    //gps thread
     cthread_gps();

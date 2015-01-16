@@ -17,11 +17,13 @@ static int open_uart( char *dev)
     fd = open( dev, O_RDWR );
     if (fd == -1)
     {
-        perror("Can't Open Serial Port");
+        printf("Can't Open OBD Serial Port!\n");
         exit(1);
     }
-    else
+    else{
+        printf("Open obd serial port successfully!\n");
         return fd;
+    }
 }
 /*
  * uart init  8.N.1
@@ -51,8 +53,11 @@ static void init_uart( int fd )
     tcflush(fd,TCIFLUSH);
     if (tcsetattr(fd,TCSANOW,&options) != 0)
     {
-       perror("com set error!\n");
+       printf("Setting obd serial port in error!\n");
        exit(1);
+    }
+    else{
+        printf("Initialize obd serial successfully!\n");
     }
 }
 /*
@@ -74,7 +79,7 @@ static void read_uart( int fd, char *buff, int bufflen)
     }
     if (nread<=0)
     {
-      perror("read data error");
+      printf("Read obd data in error!\n");
     }
 }
 /*
@@ -98,10 +103,12 @@ static int init_obd( int fd)
                         read_uart( fd, buff, 64);
                         if (( strncmp(buff, "ATZ\n", 4) == 0) || ( strncmp(buff, "\n\nELM", 5) == 0)){
                             flag = 1;
+                            printf("Write ATZ successful!\n");
                         }
                     }
-                    else
-                        perror("write buf_atz error!\n");
+                    else{
+                        printf("write ATZ in error!\n");
+                    }
                     break;
                 }
         case 1:	{
@@ -109,10 +116,11 @@ static int init_obd( int fd)
                         read_uart( fd, buff, 64);
                         if ( strncmp(buff, "ATE0\n", 5) == 0){
                             flag = 2;
+                            printf("Write ATE0 successful!\n");
                         }
                     }
                     else
-                        perror("write buf_ate0 error");
+                        printf("write ATE0 in error\n");
                     break;
                 }
         case 2:{
@@ -120,10 +128,11 @@ static int init_obd( int fd)
                         read_uart( fd, buff, 64);
                         if ( strncmp(buff, "OK", 2) == 0){
                             flag = 3; // obd init over
+                            printf("Write ATSP0 successful!\n");
                         }
                     }
                     else
-                        perror("write buf_atsp0 error");
+                        printf("write ATSP0 in error\n");
                     break;
                 }
         case 3:{
@@ -131,16 +140,17 @@ static int init_obd( int fd)
                         read_uart( fd, buff, 64);
                         if (( strncmp(buff, "41 00", 5) == 0) || (strncmp(buff, "SEARCH", 6) == 0)){
                             flag = 4;
+                            printf("Write 4100 successful!\n");
                         }
                     }
                     else
-                        perror("write buf_connect error");
+                        printf("write 4100 in error\n");
                     break;
                 }
         default: break;
         }
     }
-
+    printf("Initialize obd successfully!\n");
     return 0;
 }
 /*
@@ -439,13 +449,14 @@ static void read_obd( int fd, struct OBD *p)
 void *obd_thread(void *m)
 {
     int fd;
-    char *dev = "/dev/ttyUSB0";
+    char *dev = "/dev/ttyUSB1";
 
     fd = open_uart(dev);
     init_uart( fd);
     init_obd( fd);
 //	usleep(500000);
 
+    printf("Start to read obd data!\n");
     read_obd( fd, &obd_info);
 
     close(fd);
